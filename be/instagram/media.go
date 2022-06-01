@@ -1,16 +1,8 @@
-//
-// media.go
-// Copyright 2017 Konstantin Dovnar
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-
 package instagram
 
 import (
-	"strconv"
 	"encoding/json"
+	"strconv"
 )
 
 // TypeImage is a string that define image type for media.
@@ -51,26 +43,16 @@ type mediaItem struct {
 	Code string
 }
 
-// Update try to update media data
-func (m *Media) Update() error {
-	media, err := GetMediaByCode(m.Code)
-	if err != nil {
-		return err
-	}
-	*m = media
-	return nil
-}
-
 func getFromMediaPage(data []byte) (Media, error) {
 	var mediaJSON struct {
 		Graphql struct {
 			ShortcodeMedia struct {
-				Typename   string `json:"__typename"`
-				ID         string `json:"id"`
-				Shortcode  string `json:"shortcode"`
-				DisplayURL string `json:"display_url"`
-				VideoURL   string `json:"video_url"`
-				IsVideo    bool `json:"is_video"`
+				Typename           string `json:"__typename"`
+				ID                 string `json:"id"`
+				Shortcode          string `json:"shortcode"`
+				DisplayURL         string `json:"display_url"`
+				VideoURL           string `json:"video_url"`
+				IsVideo            bool   `json:"is_video"`
 				EdgeMediaToCaption struct {
 					Edges []struct {
 						Node struct {
@@ -81,7 +63,7 @@ func getFromMediaPage(data []byte) (Media, error) {
 				EdgeMediaToComment struct {
 					Count int `json:"count"`
 				} `json:"edge_media_to_comment"`
-				TakenAtTimestamp int `json:"taken_at_timestamp"`
+				TakenAtTimestamp     int `json:"taken_at_timestamp"`
 				EdgeMediaPreviewLike struct {
 					Count int `json:"count"`
 				} `json:"edge_media_preview_like"`
@@ -90,9 +72,9 @@ func getFromMediaPage(data []byte) (Media, error) {
 					ProfilePicURL string `json:"profile_pic_url"`
 					Username      string `json:"username"`
 					FullName      string `json:"full_name"`
-					IsPrivate     bool `json:"is_private"`
+					IsPrivate     bool   `json:"is_private"`
 				} `json:"owner"`
-				IsAd bool `json:"is_ad"`
+				IsAd                  bool `json:"is_ad"`
 				EdgeSidecarToChildren struct {
 					Edges []struct {
 						Node struct {
@@ -101,7 +83,7 @@ func getFromMediaPage(data []byte) (Media, error) {
 							Shortcode  string `json:"shortcode"`
 							DisplayURL string `json:"display_url"`
 							VideoURL   string `json:"video_url"`
-							IsVideo    bool `json:"is_video"`
+							IsVideo    bool   `json:"is_video"`
 						} `json:"node"`
 					} `json:"edges"`
 				} `json:"edge_sidecar_to_children"`
@@ -177,13 +159,13 @@ func getFromAccountMediaList(data []byte) (Media, error) {
 		} `json:"user"`
 		Images struct {
 			StandardResolution struct {
-				Width  int `json:"width"`
-				Height int `json:"height"`
+				Width  int    `json:"width"`
+				Height int    `json:"height"`
 				URL    string `json:"url"`
 			} `json:"standard_resolution"`
 		} `json:"images"`
 		CreatedTime string `json:"created_time"`
-		Caption struct {
+		Caption     struct {
 			Text string `json:"text"`
 		} `json:"caption"`
 		Likes struct {
@@ -192,11 +174,11 @@ func getFromAccountMediaList(data []byte) (Media, error) {
 		Comments struct {
 			Count float64 `json:"count"`
 		} `json:"comments"`
-		Type string `json:"type"`
+		Type   string `json:"type"`
 		Videos struct {
 			StandardResolution struct {
-				Width  int `json:"width"`
-				Height int `json:"height"`
+				Width  int    `json:"width"`
+				Height int    `json:"height"`
 				URL    string `json:"url"`
 			} `json:"standard_resolution"`
 		} `json:"videos"`
@@ -212,7 +194,7 @@ func getFromAccountMediaList(data []byte) (Media, error) {
 				} `json:"standard_resolution"`
 			} `json:"videos"`
 			UsersInPhoto []interface{} `json:"users_in_photo"`
-			Type         string `json:"type"`
+			Type         string        `json:"type"`
 		} `json:"carousel_media"`
 	}
 
@@ -264,51 +246,6 @@ func getFromAccountMediaList(data []byte) (Media, error) {
 	media.Owner.FullName = mediaJSON.User.FullName
 	media.Owner.ID = mediaJSON.User.ID
 	media.Owner.ProfilePicURL = mediaJSON.User.ProfilePicture
-
-	return media, nil
-}
-
-func getFromSearchMediaList(data []byte) (Media, error) {
-	var mediaJSON struct {
-		CommentsDisabled bool `json:"comments_disabled"`
-		ID               string `json:"id"`
-		Owner struct {
-			ID string `json:"id"`
-		} `json:"owner"`
-		ThumbnailSrc string `json:"thumbnail_src"`
-		IsVideo      bool `json:"is_video"`
-		Code         string `json:"code"`
-		Date         float64 `json:"date"`
-		DisplaySrc   string `json:"display_src"`
-		Caption      string `json:"caption"`
-		Comments struct {
-			Count float64 `json:"count"`
-		} `json:"comments"`
-		Likes struct {
-			Count float64 `json:"count"`
-		} `json:"likes"`
-	}
-
-	err := json.Unmarshal(data, &mediaJSON)
-	if err != nil {
-		return Media{}, err
-	}
-
-	media := Media{}
-	media.ID = mediaJSON.ID
-	media.Code = mediaJSON.Code
-	media.MediaURL = mediaJSON.DisplaySrc
-	media.Caption = mediaJSON.Caption
-	media.Date = uint64(mediaJSON.Date)
-	media.LikesCount = uint32(mediaJSON.Likes.Count)
-	media.CommentsCount = uint32(mediaJSON.Comments.Count)
-	media.Owner.ID = mediaJSON.Owner.ID
-
-	if mediaJSON.IsVideo {
-		media.Type = TypeVideo
-	} else {
-		media.Type = TypeImage
-	}
 
 	return media, nil
 }

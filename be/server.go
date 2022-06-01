@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/TinyAnnie/engagement-rate-cal/be/endpoints"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-
-	"github.com/TinyAnnie/engagement-rate-cal/be/instagram/endpoints"
-
-	"github.com/gorilla/mux"
 )
 
 func main() {
